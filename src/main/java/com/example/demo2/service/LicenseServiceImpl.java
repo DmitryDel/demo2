@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -15,9 +17,14 @@ public class LicenseServiceImpl implements LicenseService {
     public String createRandomLicenseNumber() {
         Random random = new Random();
         StringBuilder licenseNumber = new StringBuilder();
-        char randomLetter = (char) ('A' + random.nextInt(26));
-        int randomInteger = random.nextInt(10);
 
-        return licenseNumber.append(randomLetter).append(randomInteger).toString();
+        String randomLetter = IntStream.range(0, 4)
+                .mapToObj(el -> (char)('A' + random.nextInt(26)))
+                .map(String::valueOf).collect(Collectors.joining());
+        for (int i = 1; i <= 9; i++) {
+            licenseNumber.append(random.nextInt(9) + 1);
+        }
+
+        return randomLetter + "-" + licenseNumber;
     }
 }
