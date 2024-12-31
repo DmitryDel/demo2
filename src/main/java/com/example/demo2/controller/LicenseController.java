@@ -33,27 +33,30 @@ public class LicenseController {
     @PostMapping("/{id}")
     public ResponseEntity<String> issueLicense(@PathVariable Long id) {
         ResponseEntity<PersonResponseDTO> response = personClient.getPersonById(id);
-        if (response.getStatusCode() == HttpStatus.OK) {
-            String licenseNumber = licenseService.createRandomLicenseNumber();
+        PersonResponseDTO personResponseDTO = response.getBody();
+        if(personResponseDTO != null) {
+            if (personResponseDTO.getCarsList() != null || personResponseDTO.getCarsList().isEmpty()) {
+                String licenseNumber = licenseService.createRandomLicenseNumber();
 
-            try {
-                // Путь к файлу для сохранения
-                String fileName = "license_" + id + ".txt";
-                Path path = Paths.get(fileName);
+                try {
+                    // Путь к файлу для сохранения
+                    String fileName = "license_" + id + ".txt";
+                    Path path = Paths.get(fileName);
 
-                // Запись номера лицензии в файл
-                Files.write(path, Collections.singleton("License Number: " + licenseNumber));
+                    // Запись номера лицензии в файл
+                    Files.write(path, Collections.singleton("License Number: " + licenseNumber));
 
-                // Возвращаем URI для скачивания файла
-                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/license/download/")
-                        .path(fileName)
-                        .toUriString();
+                    // Возвращаем URI для скачивания файла
+                    String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                            .path("/license/download/")
+                            .path(fileName)
+                            .toUriString();
 
-                return ResponseEntity.ok("License Number: " + licenseNumber + ". Download Link: " + fileDownloadUri);
-            } catch (IOException e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Could not save license number file.");
+                    return ResponseEntity.ok("License Number: " + licenseNumber + ". Download Link: " + fileDownloadUri);
+                } catch (IOException e) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Could not save license number file.");
+                }
             }
         }
         return ResponseEntity.notFound().build();
